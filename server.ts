@@ -374,6 +374,11 @@ async function startServer() {
   });
 }
 
-startServer().catch((err) => {
-  console.error('Failed to start TrekPulse server:', err);
-});
+// Export for Vercel serverless functions
+export default app;
+
+if (!process.env.VERCEL) {
+  startServer().catch((err) => {
+    console.error('Failed to start TrekPulse server:', err);
+  });
+}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTrekPulse } from '../../context/TrekPulseContext';
 import { PrepAdvisorResponse } from '../../types/trek';
+import { mockPrepAdvisor } from '../../server/mockAi';
 import { ShimmerCard } from '../common/Shimmer';
 import { 
   Sparkles, 
@@ -43,8 +44,9 @@ export const GearReadinessScreen: React.FC = () => {
       const data: PrepAdvisorResponse = await res.json();
       setAdviceResult(data);
     } catch (err: any) {
-      console.error(err);
-      setAdviceError('Could not generate personalized prep plan. Please try again.');
+      console.warn('Backend API unavailable, falling back to local prep advisor:', err);
+      const fallback = mockPrepAdvisor(exp, priorMaxAltitude, coldSensitivity);
+      setAdviceResult(fallback);
     } finally {
       setIsAdvising(false);
     }

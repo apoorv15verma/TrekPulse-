@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTrekPulse } from '../../context/TrekPulseContext';
 import { Region, Difficulty, ItineraryDay, GearItem, GenerateTrekResponse } from '../../types/trek';
+import { mockGenerateTrek } from '../../server/mockAi';
 import { ShimmerCard } from '../common/Shimmer';
 import { 
   Sparkles, 
@@ -130,8 +131,23 @@ export const GuideCreateTrekScreen: React.FC = () => {
 
       setAiDraftReceived(true);
     } catch (err: any) {
-      console.error(err);
-      setGenerationError('Unable to generate AI draft. Please try again.');
+      console.warn('Backend API unavailable, falling back to local mountain intelligence:', err);
+      const fallback = mockGenerateTrek(text, preferredRegion);
+      setTitle(fallback.title);
+      setSubtitle(fallback.subtitle);
+      setRegion(fallback.region);
+      setDifficulty(fallback.difficulty);
+      setTravellerStyle(fallback.travellerStyle);
+      setTravellerSummary(fallback.travellerSummary);
+      setMaxAltitudeFt(fallback.maxAltitudeFt);
+      setBasePriceInr(fallback.basePriceInr);
+      setBasecamp(fallback.basecamp);
+      setDurationDays(fallback.durationDays);
+      setBatchDateLabel(fallback.batchDateLabel || '24 Dec – 29 Dec 2026');
+      setTotalSeats(fallback.totalSeats || 16);
+      if (fallback.itinerary && fallback.itinerary.length > 0) setItinerary(fallback.itinerary);
+      if (fallback.gearList && fallback.gearList.length > 0) setGearList(fallback.gearList);
+      setAiDraftReceived(true);
     } finally {
       setIsGenerating(false);
     }

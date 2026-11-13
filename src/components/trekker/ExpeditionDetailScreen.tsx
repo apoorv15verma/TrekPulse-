@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTrekPulse } from '../../context/TrekPulseContext';
 import { QnAMessage, TrailQnAResponse } from '../../types/trek';
+import { mockTrailQnA } from '../../server/mockAi';
 import { 
   Sparkles, 
   MapPin, 
@@ -70,14 +71,12 @@ export const ExpeditionDetailScreen: React.FC = () => {
         setSuggestedFollowUps(data.followUpSuggestions);
       }
     } catch (err: any) {
-      console.error(err);
-      setConversation(prev => [
-        ...prev,
-        {
-          role: 'model',
-          text: `On ${exp.title}, the highest elevation is ${exp.maxAltitudeFt.toLocaleString()} ft with basecamp at ${exp.basecamp}. Guide checkpoints monitor acclimatization daily.`
-        }
-      ]);
+      console.warn('Backend API unavailable, falling back to local trail Q&A:', err);
+      const fallback = mockTrailQnA(q, exp);
+      setConversation(prev => [...prev, { role: 'model', text: fallback.answer }]);
+      if (fallback.followUpSuggestions && fallback.followUpSuggestions.length > 0) {
+        setSuggestedFollowUps(fallback.followUpSuggestions);
+      }
     } finally {
       setIsAsking(false);
     }

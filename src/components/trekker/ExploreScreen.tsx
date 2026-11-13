@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTrekPulse } from '../../context/TrekPulseContext';
 import { Region, MatchTreksResponse, MatchedTrek } from '../../types/trek';
+import { mockMatchTreks } from '../../server/mockAi';
 import { ShimmerCard } from '../common/Shimmer';
 import { 
   Sparkles, 
@@ -81,8 +82,12 @@ export const ExploreScreen: React.FC = () => {
       const data: MatchTreksResponse = await res.json();
       setMatchResult(data);
     } catch (err: any) {
-      console.error(err);
-      setMatchError('Could not compute trek match. Please try again.');
+      console.warn('Backend API unavailable, falling back to local matcher:', err);
+      const fallback = mockMatchTreks(
+        { fitness, maxDays, budgetInr: budget, query: customGoal },
+        summaryList
+      );
+      setMatchResult(fallback);
     } finally {
       setIsMatching(false);
     }
